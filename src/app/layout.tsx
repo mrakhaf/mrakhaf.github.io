@@ -15,7 +15,7 @@ const sora = Sora({
 });
 
 export const metadata: Metadata = {
-  title: "Muhammad Rakha Firdaus — Software Engineer & DJ",
+  title: "mrakhaf — Software Engineer & DJ",
   description:
     "Portfolio of Muhammad Rakha Firdaus (mrakhaf) - Software Engineer specializing in building scalable backend systems with Go, Kafka, and PostgreSQL. Also a DJ.",
   keywords: [
