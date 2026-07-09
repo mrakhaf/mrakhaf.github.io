@@ -1,35 +1,42 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Manrope, Sora } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const manrope = Manrope({
+  variable: "--font-manrope",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const sora = Sora({
+  variable: "--font-sora",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
-  title: "Muhammad Rakha Firdaus - Software Engineer",
-  description: "Portfolio of Muhammad Rakha Firdaus (mrakhaf) - Software Engineer specializing in building scalable backend systems with Go, Kafka, and PostgreSQL.",
-  keywords: ["Muhammad Rakha Firdaus", "mrakhaf", "Software Engineer", "Go Developer", "Backend Engineer", "Kafka", "PostgreSQL", "Docker", "Node.js", "Python", "Portfolio"],
+  title: "Muhammad Rakha Firdaus — Software Engineer & DJ",
+  description:
+    "Portfolio of Muhammad Rakha Firdaus (mrakhaf) - Software Engineer specializing in building scalable backend systems with Go, Kafka, and PostgreSQL. Also a DJ.",
+  keywords: [
+    "Muhammad Rakha Firdaus",
+    "mrakhaf",
+    "Software Engineer",
+    "Go Developer",
+    "Backend Engineer",
+    "DJ",
+    "Portfolio",
+  ],
   authors: [{ name: "Muhammad Rakha Firdaus", url: "https://github.com/mrakhaf" }],
   openGraph: {
-    title: "Muhammad Rakha Firdaus - Software Engineer",
-    description: "Portfolio of Muhammad Rakha Firdaus (mrakhaf) - Software Engineer specializing in building scalable backend systems with Go, Kafka, and PostgreSQL.",
+    title: "Muhammad Rakha Firdaus — Software Engineer & DJ",
+    description:
+      "Portfolio of Muhammad Rakha Firdaus (mrakhaf) - Software Engineer specializing in building scalable backend systems with Go, Kafka, and PostgreSQL. Also a DJ.",
     type: "website",
     locale: "en_US",
   },
-  robots: {
-    index: true,
-    follow: true,
-  },
-  icons: {
-    icon: "/favicon.svg",
-  },
+  robots: { index: true, follow: true },
+  icons: { icon: "/favicon.svg" },
 };
 
 export default function RootLayout({
@@ -40,9 +47,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${manrope.variable} ${sora.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full">{children}</body>
     </html>
   );
 }

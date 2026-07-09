@@ -1,132 +1,203 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+
+const ROLES = ["a Software Engineer.", "a DJ, too.", "always building."];
+
+const SOCIALS = [
+  {
+    name: "Instagram",
+    href: "https://instagram.com/mrakhaf",
+    className: "social-ig",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" strokeWidth="2" />
+        <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="2" />
+        <circle cx="17.5" cy="6.5" r="1.3" fill="currentColor" />
+      </svg>
+    ),
+  },
+  {
+    name: "YouTube",
+    href: "https://youtube.com/@mrakhaf",
+    className: "social-yt",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <rect x="2" y="5" width="20" height="14" rx="4" stroke="currentColor" strokeWidth="2" />
+        <path d="M10 9.2v5.6l5-2.8-5-2.8z" fill="currentColor" />
+      </svg>
+    ),
+  },
+  {
+    name: "LinkedIn",
+    href: "https://linkedin.com/in/mrakhaf",
+    className: "social-li",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <rect x="3" y="3" width="18" height="18" rx="4" stroke="currentColor" strokeWidth="2" />
+        <path d="M7 10v7M7 7v.01M11 17v-4a2 2 0 0 1 4 0v4M11 17v-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    name: "GitHub",
+    href: "https://github.com/mrakhaf",
+    className: "social-gh",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49v-1.7c-2.78.62-3.37-1.22-3.37-1.22-.45-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.9 1.57 2.34 1.12 2.91.86.09-.66.35-1.12.63-1.38-2.22-.26-4.55-1.14-4.55-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05a9.36 9.36 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.8-4.57 5.05.36.32.68.94.68 1.9v2.82c0 .27.18.6.69.49A10.02 10.02 0 0 0 22 12.25C22 6.58 17.52 2 12 2z" />
+      </svg>
+    ),
+  },
+];
+
+function useTypewriter(words: string[]) {
+  const [typed, setTyped] = useState("");
+  const state = useRef({ word: 0, char: 0, deleting: false });
+
+  useEffect(() => {
+    let alive = true;
+    let timer: ReturnType<typeof setTimeout>;
+
+    const tick = () => {
+      if (!alive) return;
+      const s = state.current;
+      const word = words[s.word];
+      s.char += s.deleting ? -1 : 1;
+      setTyped(word.slice(0, s.char));
+
+      let delay = s.deleting ? 40 : 75;
+      if (!s.deleting && s.char === word.length) {
+        s.deleting = true;
+        delay = 1600;
+      } else if (s.deleting && s.char === 0) {
+        s.deleting = false;
+        s.word = (s.word + 1) % words.length;
+        delay = 350;
+      }
+      timer = setTimeout(tick, delay);
+    };
+
+    tick();
+    return () => {
+      alive = false;
+      clearTimeout(timer);
+    };
+  }, [words]);
+
+  return typed;
+}
 
 export default function Home() {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-        delayChildren: 0.1
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        type: "spring" as const,
-        damping: 12,
-        stiffness: 100
-      }
-    }
-  };
-
-  const buttonVariants = {
-    hover: {
-      scale: 1.05,
-      boxShadow: "0 0 15px rgba(99, 102, 241, 0.3)",
-      transition: {
-        type: "spring" as const,
-        stiffness: 400,
-        damping: 10
-      }
-    }
-  };
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const typed = useTypewriter(ROLES);
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
-      {/* Subtle animated gradient background */}
-      <div className="gradient-bg"></div>
-      
-      <motion.main 
-        className="w-full max-w-4xl mx-auto px-4 sm:px-6 md:px-8 py-8 text-center"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
+    <div className={`banner-root${theme === "dark" ? " dark" : ""}`}>
+      <button
+        className="theme-toggle"
+        aria-label="Toggle theme"
+        onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
       >
-        {/* Name */}
-        <motion.h1 
-          className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-3 sm:mb-4 bg-gradient-to-r from-blue-300 via-purple-300 to-pink-300 bg-clip-text text-transparent leading-tight"
-          variants={itemVariants}
-        >
-          Muhammad Rakha Firdaus
-        </motion.h1>
+        <svg style={{ display: "var(--show-moon,block)" }} width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+        </svg>
+        <svg style={{ display: "var(--show-sun,none)" }} width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="4.2" stroke="currentColor" strokeWidth="2" />
+          <path d="M12 2.5v2.5M12 19v2.5M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2.5 12H5M19 12h2.5M4.2 19.8 6 18M18 6l1.8-1.8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      </button>
 
-        {/* Role */}
-        <motion.h2 
-          className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-light mb-4 sm:mb-6 md:mb-8 bg-gradient-to-r from-blue-200 via-purple-200 to-pink-200 bg-clip-text text-transparent"
-          variants={itemVariants}
-        >
-          Software Engineer
-        </motion.h2>
+      <div className="aurora" aria-hidden="true">
+        <div className="blob blob-a" />
+        <div className="blob blob-b" />
+        <div className="blob blob-c" />
+        <div className="blob blob-d" />
+      </div>
 
-        {/* Tagline */}
-        <motion.p 
-          className="text-sm sm:text-base md:text-lg lg:text-xl mb-4 sm:mb-6 md:mb-8 lg:mb-12 max-w-2xl mx-auto leading-relaxed bg-gradient-to-r from-gray-100 via-gray-200 to-gray-300 bg-clip-text text-transparent"
-          variants={itemVariants}
-        >
-          Specializing in fintech and insurance systems, particularly decision platforms, with experience building scalable backend services, designing reliable APIs, and developing high-performance systems for complex business logic.
-        </motion.p>
+      <div className="stage">
+        <div className="intro">
+          <div className="badge">
+            <span className="badge-dot" />
+            <span>Open to collaboration</span>
+          </div>
 
-        {/* Personal touch */}
-        <motion.p 
-          className="text-xs sm:text-sm mb-4 sm:mb-6 md:mb-8 lg:mb-12 italic bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent font-bold"
-          variants={itemVariants}
-        >
-          Also a DJ in my free time, with a passion for disco and house music.
-        </motion.p>
+          <h1 className="name">
+            Muhammad
+            <br />
+            Rakha Firdaus
+          </h1>
 
-        {/* Tech Stack Badges */}
-        <motion.div 
-          className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-4 sm:mb-6 md:mb-8 lg:mb-12"
-          variants={itemVariants}
-        >
-          {["Go", "Kafka", "PostgreSQL", "Docker", "Node.js", "Python"].map((tech, index) => (
-            <span
-              key={tech}
-              className="px-3 py-1.5 sm:px-4 sm:py-2 bg-gray-800 text-gray-300 rounded-full text-xs sm:text-sm border border-gray-700 hover:border-gray-600 transition-colors"
-            >
-              {tech}
-            </span>
-          ))}
-        </motion.div>
+          <div className="role">
+            <span className="role-lead">I&apos;m&nbsp;</span>
+            <span className="role-word">{typed}</span>
+            <span className="role-caret" />
+          </div>
 
-        {/* Action Buttons */}
-        <motion.div 
-          className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center"
-          variants={itemVariants}
-        >
-          <motion.a
-            href="https://github.com/mrakhaf"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full sm:w-auto px-5 py-3 sm:px-6 sm:py-3 md:px-8 md:py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-full hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg flex items-center justify-center gap-2 text-sm sm:text-base"
-            variants={buttonVariants}
-            whileHover="hover"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:w-5 sm:h-5"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
-            GitHub
-          </motion.a>
-          
-          <motion.a
-            href="https://linkedin.com/in/mrakhaf"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full sm:w-auto px-5 py-3 sm:px-6 sm:py-3 md:px-8 md:py-4 bg-gray-800 text-gray-200 font-medium rounded-full border border-gray-700 hover:bg-gray-700 hover:border-gray-600 transition-all duration-300 flex items-center justify-center gap-2 text-sm sm:text-base"
-            variants={buttonVariants}
-            whileHover="hover"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:w-5 sm:h-5"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
-            LinkedIn
-          </motion.a>
-        </motion.div>
-      </motion.main>
+          <p className="tagline">
+            Building thoughtful software, and the occasional set that fills the floor.
+          </p>
+
+          <div className="socials">
+            {SOCIALS.map((s) => (
+              <a key={s.name} href={s.href} target="_blank" rel="noopener noreferrer" className={`social-btn ${s.className}`}>
+                {s.icon}
+                {s.name}
+              </a>
+            ))}
+          </div>
+        </div>
+
+        <div className="portrait">
+          <div className="portrait-glow" aria-hidden="true" />
+          <div className="deck" aria-hidden="true">
+            <div className="deck-tilt">
+              <svg className="deck-vinyl" viewBox="0 0 200 200">
+                <defs>
+                  <radialGradient id="vinyl-disc" cx="42%" cy="38%" r="75%">
+                    <stop offset="0" stopColor="#33334d" />
+                    <stop offset="0.45" stopColor="#1a1a2e" />
+                    <stop offset="1" stopColor="#080810" />
+                  </radialGradient>
+                  <radialGradient id="vinyl-label" cx="40%" cy="35%" r="75%">
+                    <stop offset="0" stopColor="#fcd34d" />
+                    <stop offset="0.55" stopColor="#f59e0b" />
+                    <stop offset="1" stopColor="#b45309" />
+                  </radialGradient>
+                  <linearGradient id="vinyl-rim" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stopColor="rgba(255,255,255,0.55)" />
+                    <stop offset="0.5" stopColor="rgba(255,255,255,0)" />
+                    <stop offset="1" stopColor="rgba(0,0,0,0.5)" />
+                  </linearGradient>
+                  <path id="vinyl-top" d="M 100 100 m -26 0 a 26 26 0 1 1 52 0" />
+                </defs>
+                <circle cx="100" cy="100" r="99" fill="url(#vinyl-disc)" />
+                <circle cx="100" cy="100" r="98.5" fill="none" stroke="url(#vinyl-rim)" strokeWidth="2" />
+                {[92, 84, 76, 68, 60, 52, 44].map((r) => (
+                  <circle key={r} cx="100" cy="100" r={r} fill="none" stroke="rgba(255,255,255,0.10)" strokeWidth="0.5" />
+                ))}
+                <line x1="100" y1="100" x2="100" y2="6" stroke="rgba(255,255,255,0.16)" strokeWidth="0.8" />
+                <circle cx="100" cy="100" r="35" fill="#0d0e1c" />
+                <circle cx="100" cy="100" r="34" fill="url(#vinyl-label)" />
+                <circle cx="88" cy="86" r="10" fill="rgba(255,255,255,0.25)" />
+                <text className="vinyl-text" textAnchor="middle">
+                  <textPath href="#vinyl-top" startOffset="50%">NOW SPINNING</textPath>
+                </text>
+                <circle cx="100" cy="100" r="6" fill="#0d0e1c" />
+              </svg>
+              <div className="deck-sheen" />
+            </div>
+          </div>
+          <div className="portrait-float">
+            <div className="portrait-frame">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/rakha.jpg" alt="Muhammad Rakha Firdaus" />
+            </div>
+            <div className="chip chip-code">&lt;/&gt; &nbsp;Code</div>
+            <div className="chip chip-decks">♫&nbsp; On the decks</div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
