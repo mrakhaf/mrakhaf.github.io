@@ -99,7 +99,7 @@ a:hover { color: #a16207; }
   aspect-ratio: 1;
   transform: translate(42%, -50%);
   perspective: 1100px;
-  pointer-events: none;
+  animation: vinylReveal 1.5s cubic-bezier(0.22, 1, 0.36, 1) 0.55s both;
 }
 .deck-tilt {
   position: relative;
@@ -112,8 +112,10 @@ a:hover { color: #a16207; }
 .deck-vinyl {
   width: 100%;
   height: 100%;
-  animation: vinylSpin 7s linear infinite;
+  cursor: grab;
+  touch-action: none;
 }
+.deck-vinyl:active { cursor: grabbing; }
 .vinyl-text {
   font-family: var(--font-sora), sans-serif;
   font-weight: 700;
@@ -130,8 +132,14 @@ a:hover { color: #a16207; }
     radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 42%),
     radial-gradient(circle at 72% 82%, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0) 40%);
   mix-blend-mode: screen;
+  pointer-events: none;
 }
-@keyframes vinylSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+/* Vinyl slides out from behind the photo on load, then settles peeking on the right */
+@keyframes vinylReveal {
+  0%   { transform: translate(-32%, -50%) scale(0.72); opacity: 0; }
+  60%  { opacity: 1; }
+  100% { transform: translate(42%, -50%) scale(1); opacity: 1; }
+}
 .blob-a { top: -15%; left: -8%; width: 46vw; height: 46vw; background: radial-gradient(circle at 30% 30%, rgba(253,224,150,0.5), rgba(253,224,150,0) 70%); animation: auroraA 18s ease-in-out infinite; }
 .blob-b { top: -5%; right: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle at 60% 40%, rgba(253,211,120,0.42), rgba(253,211,120,0) 70%); animation: auroraB 22s ease-in-out infinite; }
 .blob-c { bottom: -18%; left: 12%; width: 44vw; height: 44vw; background: radial-gradient(circle at 50% 50%, rgba(255,236,170,0.42), rgba(255,236,170,0) 70%); animation: auroraC 20s ease-in-out infinite; }
@@ -254,5 +262,5 @@ a:hover { color: #a16207; }
 @keyframes ringSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .deck-vinyl, .blob, .portrait-glow, .portrait-float, .chip { animation: none; }
+  .deck, .deck-vinyl, .blob, .portrait-glow, .portrait-float, .chip { animation: none; }
 }
