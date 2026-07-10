@@ -88,9 +88,122 @@ function useTypewriter(words: string[]) {
   return typed;
 }
 
+type VinylAudio = { ctx: AudioContext; gain: GainNode; filter: BiquadFilterNode };
+
+function useVinylDrag() {
+  const ref = useRef<SVGSVGElement>(null);
+  const spin = useRef({ angle: 0, velocity: 0, dragging: false, lastPointer: 0, lastTime: 0 });
+  const audio = useRef<VinylAudio | null>(null);
+
+  // Synthesize a vinyl-scratch texture: looping noise → bandpass → gain.
+  // Started on the first pointer gesture so it satisfies browser autoplay rules.
+  const ensureAudio = () => {
+    if (audio.current) {
+      audio.current.ctx.resume();
+      return;
+    }
+    const Ctx =
+      window.AudioContext ??
+      (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!Ctx) return;
+    const ctx = new Ctx();
+    const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 1.5), ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.loop = true;
+    const filter = ctx.createBiquadFilter();
+    filter.type = "bandpass";
+    filter.frequency.value = 500;
+    filter.Q.value = 0.9;
+    const gain = ctx.createGain();
+    gain.gain.value = 0;
+    src.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    src.start();
+    audio.current = { ctx, gain, filter };
+  };
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const idle = reduce ? 0 : 360 / 7000; // deg per ms → ~7s per revolution
+    spin.current.velocity = idle;
+
+    let raf = 0;
+    let prev = 0;
+    const step = (t: number) => {
+      const s = spin.current;
+      if (prev === 0) prev = t;
+      const dt = t - prev;
+      prev = t;
+      if (!s.dragging) {
+        s.angle += s.velocity * dt;
+        s.velocity += (idle - s.velocity) * Math.min(1, dt / 500); // ease momentum back to idle
+      }
+      el.style.transform = `rotate(${s.angle}deg)`;
+
+      const a = audio.current;
+      if (a) {
+        const speed = Math.abs(s.velocity); // deg/ms — idle ≈ 0.05, scratching is far higher
+        const vol = Math.max(0, Math.min(1, (speed - 0.09) * 2.2)); // silent at idle, louder when fast
+        a.gain.gain.setTargetAtTime(vol * 0.22, a.ctx.currentTime, 0.04);
+        a.filter.frequency.setTargetAtTime(350 + speed * 1400, a.ctx.currentTime, 0.04);
+      }
+      raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => {
+      cancelAnimationFrame(raf);
+      audio.current?.ctx.close();
+      audio.current = null;
+    };
+  }, []);
+
+  const angleAt = (clientX: number, clientY: number) => {
+    const r = ref.current!.getBoundingClientRect();
+    return (Math.atan2(clientY - (r.top + r.height / 2), clientX - (r.left + r.width / 2)) * 180) / Math.PI;
+  };
+
+  const onPointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
+    ensureAudio();
+    const s = spin.current;
+    s.dragging = true;
+    s.velocity = 0;
+    s.lastPointer = angleAt(e.clientX, e.clientY);
+    s.lastTime = e.timeStamp;
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const onPointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
+    const s = spin.current;
+    if (!s.dragging) return;
+    const p = angleAt(e.clientX, e.clientY);
+    let delta = p - s.lastPointer;
+    if (delta > 180) delta -= 360;
+    else if (delta < -180) delta += 360;
+    const dt = e.timeStamp - s.lastTime || 16;
+    s.angle += delta;
+    s.velocity = delta / dt; // carry throw speed into momentum
+    s.lastPointer = p;
+    s.lastTime = e.timeStamp;
+  };
+
+  const onPointerUp = (e: React.PointerEvent<SVGSVGElement>) => {
+    spin.current.dragging = false;
+    e.currentTarget.releasePointerCapture(e.pointerId);
+  };
+
+  return { ref, onPointerDown, onPointerMove, onPointerUp };
+}
+
 export default function Home() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const typed = useTypewriter(ROLES);
+  const { ref: vinylRef, onPointerDown, onPointerMove, onPointerUp } = useVinylDrag();
 
   return (
     <div className={`banner-root${theme === "dark" ? " dark" : ""}`}>
@@ -152,7 +265,15 @@ export default function Home() {
           <div className="portrait-glow" aria-hidden="true" />
           <div className="deck" aria-hidden="true">
             <div className="deck-tilt">
-              <svg className="deck-vinyl" viewBox="0 0 200 200">
+              <svg
+                className="deck-vinyl"
+                viewBox="0 0 200 200"
+                ref={vinylRef}
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp}
+                onPointerCancel={onPointerUp}
+              >
                 <defs>
                   <radialGradient id="vinyl-disc" cx="42%" cy="38%" r="75%">
                     <stop offset="0" stopColor="#33334d" />
