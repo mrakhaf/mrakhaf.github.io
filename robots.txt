@@ -1,0 +1,5 @@
+User-Agent: *
+Allow: /
+
+Host: https://mrakhaf.github.io
+Sitemap: https://mrakhaf.github.io/sitemap.xml
